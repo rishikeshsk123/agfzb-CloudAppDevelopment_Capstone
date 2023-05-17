@@ -8,8 +8,8 @@ class CarModelInline(admin.StackedInline):
     model = CarModel
 # CarModelAdmin class
 class CarModelAdmin(admin.ModelAdmin):
-    list_display = ["car_name", "dealer_id", "car_type"]
-    list_filter = ["car_year"]
+    list_display = ["name", "id", "type"]
+    list_filter = ["year"]
 # CarMakeAdmin class with CarModelInline
 class CarMakeAdmin(admin.ModelAdmin):
     inlines = [CarModelInline]

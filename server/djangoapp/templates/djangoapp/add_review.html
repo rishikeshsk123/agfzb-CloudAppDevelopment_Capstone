@@ -15,7 +15,7 @@
     <div class="container-fluid">
         <h1 class="h1" style="text-align: center; margin-top: 50px;">Add a review about <b>{{dealer.full_name}}</b> </h1>
         <hr>
-        <form action="{% url 'djangoapp:add_review' dealer.id %" method="post">
+        <form action="{% url 'djangoapp:add_review' dealer.id %}" method="post">
             <div class="form-group">
                 <div class="mb-3">
                     <label for="content"><b>Add your review: </b></label>
@@ -33,7 +33,7 @@
                     <label for="car"><b>Select your car (model-make-year):</b></label>
                     <select name="car" id="car" class="form-select" required>
                         {% for car in cars %}
-                        <option selected value={{car.id}}>{{car.car_model}}-{{car.car_make}}{{car.car_year|date:"Y"}} 
+                        <option selected value={{car.id}}>{{car.make.name}} {{car.name}}-{{car.year|date:"Y"}}
                         </option>
                         {% endfor %}
                     </select>

@@ -80,7 +80,7 @@ def registration_request(request):
 def get_dealerships(request):
     if request.method == "GET":
         context = {}
-        url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/default/get-dealership"
+        url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/dealership-package/get-dealership"
         dealerships = get_dealers_from_cf(url)
         context["dealership_list"] = dealerships
         return render(request, 'djangoapp/index.html', context)
@@ -90,47 +90,51 @@ def get_dealerships(request):
 def get_dealer_details(request, id):
     if request.method == "GET":
         context = {}
-        dealer_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/default/get-dealership"
+        dealer_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/dealership-package/get-dealership"
         dealer = get_dealer_by_id_from_cf(dealer_url, id=id)
+        # print(dealer.id)
         context["dealer"] = dealer
-        review_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/default/get-review/"
+        review_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/dealership-package/get-review"
         reviews = get_dealer_reviews_from_cf(review_url, id=id)
         context["reviews"] = reviews
+        print(reviews)
         return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 def add_review(request, id):
     context = {}
-    dealer_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/default/get-dealership"
+    dealer_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/dealership-package/get-dealership"
     dealer = get_dealer_by_id_from_cf(dealer_url, id=id)
     context["dealer"] = dealer
     if request.method == "GET":
         cars = CarModel.objects.all()
+        # print(cars)
         context["cars"] = cars
         
         return render(request, 'djangoapp/add_review.html', context)
     elif request.method == "POST":
         if request.user.is_authenticated:
             username = request.user.username
-            review = dict()
-            car_id = request.POST["cars"]
-            cars = CarModel.objects.get(pk=car_id)
-            review["time"] = datetime.utcnow().isoformat()
-            review["name"] = username
-            review["dealership"] = id
-            review["id"] = id
-            review["review"] = request.POST["content"]
-            review["purchase"] = False
+            # print(request.POST)
+            payload = dict()
+            car_id = request.POST["car"]
+            car = CarModel.objects.get(pk=car_id)
+            payload["time"] = datetime.utcnow().isoformat()
+            payload["name"] = username
+            payload["dealership"] = id
+            payload["id"] = id
+            payload["review"] = request.POST["content"]
+            payload["purchase"] = False
             if "purchasecheck" in request.POST:
-                if request.POST["purchasecheck"] == "on":
-                    review["purchase"] = True
-            review["purchase_date"] = request.POST["purchasedate"]
-            review["car_make"] = car.make.name
-            review["car_model"] = car.name
-            review["car_year"] = int(car.year.strftime("%Y"))
+                if request.POST["purchasecheck"] == 'on':
+                    payload["purchase"] = True
+            payload["purchase_date"] = request.POST["purchasedate"]
+            payload["car_make"] = car.make.name  
+            payload["car_model"] = car.name
+            payload["car_year"] = int(car.year.strftime("%Y"))
 
-            new_review = {}
-            new_review["review"] = review
-            review_post_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/default/post-review"
-            post_request(review_post_url, new_review, id=id)
+            new_payload = {}
+            new_payload["review"] = payload
+            review_post_url = "https://au-syd.functions.appdomain.cloud/api/v1/web/ba3a893e-8161-4c30-80c0-7457ad058a9c/dealership-package/post-review"
+            post_request(review_post_url, new_payload, id=id)
         return redirect("djangoapp:dealer_details", id=id)
